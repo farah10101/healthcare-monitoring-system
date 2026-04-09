@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Healthcare Patient Monitoring System — SRM</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar" id="sidebar">
+  <div class="sidebar-header">
+    <div class="logo">
+      <span class="logo-icon">🏥</span>
+      <div>
+        <div class="logo-title">HealthTrack</div>
+        <div class="logo-sub">SRM Patient Monitor</div>
+      </div>
+    </div>
+  </div>
+  <nav class="sidebar-nav">
+    <a class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
+      <span class="nav-icon">📊</span> Dashboard
+    </a>
+    <a class="nav-item" onclick="showPage('patients')" id="nav-patients">
+      <span class="nav-icon">👥</span> Patients
+    </a>
+    <a class="nav-item" onclick="showPage('vitals')" id="nav-vitals">
+      <span class="nav-icon">📈</span> Add Vitals
+    </a>
+    <a class="nav-item" onclick="showPage('alerts')" id="nav-alerts">
+      <span class="nav-icon">🔔</span> Alerts
+      <span class="badge" id="alert-badge">0</span>
+    </a>
+    <a class="nav-item" onclick="showPage('doctors')" id="nav-doctors">
+      <span class="nav-icon">👨‍⚕️</span> Doctors
+    </a>
+    <a class="nav-item" onclick="showPage('algorithms')" id="nav-algorithms">
+      <span class="nav-icon">🧮</span> DAA Info
+    </a>
+  </nav>
+  <div class="sidebar-footer">
+    <div class="srm-badge">SRM Ramapuram · Batch 02</div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main" id="main">
+
+  <!-- TOP BAR -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span id="page-title">Dashboard</span>
+    </div>
+    <div class="topbar-right">
+      <span class="time-display" id="clock"></span>
+      <span class="topbar-user">Dr. Admin</span>
+    </div>
+  </header>
+
+  <!-- ── DASHBOARD PAGE ────────────────────── -->
+  <section class="page active" id="page-dashboard">
+    <div class="stat-grid">
+      <div class="stat-card blue">
+        <div class="stat-icon">👥</div>
+        <div class="stat-val" id="stat-total">—</div>
+        <div class="stat-label">Total Patients</div>
+      </div>
+      <div class="stat-card red">
+        <div class="stat-icon">⚠️</div>
+        <div class="stat-val" id="stat-critical">—</div>
+        <div class="stat-label">Critical</div>
+      </div>
+      <div class="stat-card orange">
+        <div class="stat-icon">🔔</div>
+        <div class="stat-val" id="stat-alerts">—</div>
+        <div class="stat-label">Unread Alerts</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-icon">📋</div>
+        <div class="stat-val" id="stat-vitals">—</div>
+        <div class="stat-label">Vitals Today</div>
+      </div>
+    </div>
+
+    <div class="row-2col">
+      <!-- Ward Summary -->
+      <div class="card">
+        <div class="card-header">Ward Overview</div>
+        <canvas id="wardChart" height="220"></canvas>
+      </div>
+      <!-- Recent Alerts -->
+      <div class="card">
+        <div class="card-header">Recent Alerts</div>
+        <div id="recent-alerts-list" class="alert-list"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── PATIENTS PAGE ─────────────────────── -->
+  <section class="page" id="page-patients">
+    <div class="toolbar">
+      <input type="text" id="search-box" placeholder="🔍 Search patient name..." oninput="loadPatients()" />
+      <select id="filter-ward" onchange="loadPatients()">
+        <option value="">All Wards</option>
+        <option>Cardiology</option><option>ICU</option>
+        <option>General</option><option>Diabetics</option>
+      </select>
+      <select id="filter-status" onchange="loadPatients()">
+        <option value="">All Status</option>
+        <option>Stable</option><option>Critical</option><option>Discharged</option>
+      </select>
+      <select id="sort-by" onchange="loadPatients()">
+        <option value="risk">Sort: Risk ↓</option>
+        <option value="name">Sort: Name</option>
+        <option value="age">Sort: Age</option>
+      </select>
+      <button class="btn btn-primary" onclick="openAddPatient()">+ Add Patient</button>
+    </div>
+    <div class="table-wrap">
+      <table class="data-table" id="patients-table">
+        <thead>
+          <tr>
+            <th>Patient</th><th>Age/Gender</th><th>Ward/Room</th>
+            <th>Condition</th><th>Doctor</th>
+            <th>Latest Vitals</th><th>Risk</th><th>Status</th><th>Action</th>
+          </tr>
+        </thead>
+        <tbody id="patients-tbody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── PATIENT DETAIL (modal-style page) ──── -->
+  <section class="page" id="page-patient-detail">
+    <button class="btn btn-outline back-btn" onclick="showPage('patients')">← Back to Patients</button>
+    <div id="patient-detail-content"></div>
+  </section>
+
+  <!-- ── VITALS PAGE ───────────────────────── -->
+  <section class="page" id="page-vitals">
+    <div class="card" style="max-width:680px;margin:auto">
+      <div class="card-header">📝 Record New Vital Reading</div>
+      <div class="form-grid">
+        <div class="form-group full">
+          <label>Patient</label>
+          <select id="vital-patient-id">
+            <option value="">— Select Patient —</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Heart Rate (bpm)</label>
+          <input type="number" id="v-hr" placeholder="60–100" />
+        </div>
+        <div class="form-group">
+          <label>Systolic BP (mmHg)</label>
+          <input type="number" id="v-sbp" placeholder="90–140" />
+        </div>
+        <div class="form-group">
+          <label>Diastolic BP (mmHg)</label>
+          <input type="number" id="v-dbp" placeholder="60–90" />
+        </div>
+        <div class="form-group">
+          <label>Oxygen Level (SpO2 %)</label>
+          <input type="number" id="v-spo2" placeholder="95–100" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label>Temperature (°C)</label>
+          <input type="number" id="v-temp" placeholder="36.5–37.5" step="0.1" />
+        </div>
+        <div class="form-group">
+          <label>Glucose (mg/dL)</label>
+          <input type="number" id="v-glu" placeholder="70–140" />
+        </div>
+        <div class="form-group">
+          <label>Source</label>
+          <select id="v-source">
+            <option>Manual</option><option>Wearable</option><option>EHR</option>
+          </select>
+        </div>
+      </div>
+      <button class="btn btn-primary" style="margin-top:1rem;width:100%" onclick="submitVital()">
+        Submit Vital Reading
+      </button>
+      <div id="vital-result" style="margin-top:1rem"></div>
+    </div>
+  </section>
+
+  <!-- ── ALERTS PAGE ───────────────────────── -->
+  <section class="page" id="page-alerts">
+    <div id="alerts-content"></div>
+  </section>
+
+  <!-- ── DOCTORS PAGE ─────────────────────── -->
+  <section class="page" id="page-doctors">
+    <div class="card-grid" id="doctors-grid"></div>
+  </section>
+
+  <!-- ── ALGORITHMS PAGE ───────────────────── -->
+  <section class="page" id="page-algorithms">
+    <div class="card">
+      <div class="card-header">🧮 DAA — Design and Analysis of Algorithms</div>
+      <p style="margin-bottom:1.5rem;color:var(--text-muted)">
+        Six algorithms power this monitoring system. Each is applied in real-time as patient data flows through the system.
+      </p>
+      <div id="algo-list" class="algo-grid"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- ═══════════ MODALS ═══════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+
+<!-- Add Patient Modal -->
+<div class="modal" id="add-patient-modal">
+  <div class="modal-header">
+    <h3>Add New Patient</h3>
+    <button class="modal-close" onclick="closeModal()">✕</button>
+  </div>
+  <div class="form-grid">
+    <div class="form-group full"><label>Full Name *</label><input type="text" id="p-name" /></div>
+    <div class="form-group"><label>Age *</label><input type="number" id="p-age" /></div>
+    <div class="form-group"><label>Gender</label>
+      <select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select>
+    </div>
+    <div class="form-group"><label>Blood Group</label>
+      <select id="p-bg"><option>O+</option><option>O-</option><option>A+</option><option>A-</option>
+        <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select>
+    </div>
+    <div class="form-group"><label>Ward *</label>
+      <select id="p-ward"><option>Cardiology</option><option>ICU</option><option>General</option><option>Diabetics</option></select>
+    </div>
+    <div class="form-group"><label>Room No</label><input type="text" id="p-room" /></div>
+    <div class="form-group full"><label>Condition *</label><input type="text" id="p-condition" /></div>
+    <div class="form-group full"><label>Doctor</label>
+      <select id="p-doctor"><option value="">— Select —</option></select>
+    </div>
+    <div class="form-group full"><label>Contact Phone</label><input type="text" id="p-phone" /></div>
+  </div>
+  <button class="btn btn-primary" style="margin-top:1rem;width:100%" onclick="submitPatient()">Save Patient</button>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
