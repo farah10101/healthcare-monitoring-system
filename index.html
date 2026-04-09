@@ -1,248 +1,1254 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Healthcare Patient Monitoring System — SRM</title>
-<link rel="stylesheet" href="./css/style.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>HealthTrack — SRM Patient Monitoring</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet"/>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ═══════════════════════════════════════════════════════
+   RESET + TOKENS
+═══════════════════════════════════════════════════════ */
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:       #080c14;
+  --bg2:      #0e1420;
+  --bg3:      #141c2e;
+  --bg4:      #1a2238;
+  --border:   #1e2d47;
+  --border2:  #243450;
+  --text:     #dce6f5;
+  --muted:    #5d7299;
+  --muted2:   #8599b8;
+  --blue:     #2d7ef7;
+  --blue2:    #4d97ff;
+  --cyan:     #0fbccc;
+  --green:    #0fd98a;
+  --red:      #f7385a;
+  --orange:   #ff8c38;
+  --purple:   #9a6cf7;
+  --teal:     #0fc4b4;
+  --r:        12px;
+  --r-sm:     8px;
+  --shadow:   0 8px 40px rgba(0,0,0,.6);
+  --glow-b:   0 0 24px rgba(45,126,247,.18);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+
+/* ═══════════════════════════════════════════════════════
+   AUTH SCREEN
+═══════════════════════════════════════════════════════ */
+#auth-screen{
+  min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:var(--bg);position:relative;overflow:hidden;
+}
+/* Grid lines bg */
+#auth-screen::before{
+  content:'';position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(45,126,247,.06) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(45,126,247,.06) 1px,transparent 1px);
+  background-size:48px 48px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 40%,transparent 100%);
+}
+/* Glowing orbs */
+#auth-screen::after{
+  content:'';position:absolute;width:600px;height:600px;
+  background:radial-gradient(circle,rgba(45,126,247,.12) 0%,transparent 70%);
+  top:50%;left:50%;transform:translate(-50%,-50%);pointer-events:none;
+}
+.auth-card{
+  background:var(--bg2);border:1px solid var(--border2);border-radius:20px;
+  padding:2.5rem;width:440px;max-width:95vw;position:relative;z-index:1;
+  box-shadow:var(--shadow),0 0 0 1px rgba(45,126,247,.08);
+}
+.auth-logo{display:flex;align-items:center;gap:12px;margin-bottom:2rem}
+.auth-logo-icon{
+  width:44px;height:44px;background:linear-gradient(135deg,var(--blue),var(--cyan));
+  border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+}
+.auth-logo-text{font-family:'Space Mono',monospace;font-size:1rem;font-weight:700;color:var(--text)}
+.auth-logo-sub{font-size:.72rem;color:var(--muted);font-family:'Space Mono',monospace}
+.auth-tabs{display:flex;background:var(--bg3);border-radius:var(--r-sm);padding:4px;margin-bottom:1.8rem}
+.auth-tab{
+  flex:1;padding:.55rem;text-align:center;border-radius:6px;cursor:pointer;
+  font-size:.88rem;font-weight:600;color:var(--muted);transition:all .2s;
+}
+.auth-tab.active{background:var(--bg4);color:var(--text);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.auth-title{font-size:1.35rem;font-weight:700;margin-bottom:.4rem}
+.auth-sub{font-size:.85rem;color:var(--muted);margin-bottom:1.5rem}
+.form-label{font-size:.78rem;font-weight:600;color:var(--muted2);margin-bottom:.35rem;display:block;letter-spacing:.03em;text-transform:uppercase}
+.form-input{
+  width:100%;background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+  border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.9rem;font-family:'DM Sans',sans-serif;
+  outline:none;transition:border-color .2s,box-shadow .2s;margin-bottom:1rem;
+}
+.form-input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(45,126,247,.15)}
+.form-input::placeholder{color:var(--muted)}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.btn-auth{
+  width:100%;padding:.8rem;background:linear-gradient(135deg,var(--blue),#1a5fd4);
+  border:none;border-radius:var(--r-sm);color:#fff;font-size:.95rem;font-weight:700;
+  cursor:pointer;font-family:'DM Sans',sans-serif;transition:all .2s;letter-spacing:.02em;
+  box-shadow:0 4px 20px rgba(45,126,247,.35);margin-top:.4rem;
+}
+.btn-auth:hover{transform:translateY(-1px);box-shadow:0 6px 28px rgba(45,126,247,.5)}
+.auth-divider{text-align:center;color:var(--muted);font-size:.8rem;margin:1.2rem 0;position:relative}
+.auth-divider::before,.auth-divider::after{content:'';position:absolute;top:50%;width:42%;height:1px;background:var(--border)}
+.auth-divider::before{left:0}.auth-divider::after{right:0}
+.auth-msg{font-size:.82rem;text-align:center;margin-top:1rem;color:var(--muted)}
+.auth-msg a{color:var(--blue2);cursor:pointer;font-weight:600}
+.demo-hint{background:rgba(45,126,247,.08);border:1px solid rgba(45,126,247,.2);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.8rem;color:var(--muted2);margin-bottom:1rem;line-height:1.5}
+.demo-hint strong{color:var(--blue2)}
+.auth-error{background:rgba(247,56,90,.08);border:1px solid rgba(247,56,90,.25);border-radius:6px;padding:.6rem .9rem;font-size:.82rem;color:var(--red);margin-bottom:1rem;display:none}
+.auth-success{background:rgba(15,217,138,.08);border:1px solid rgba(15,217,138,.25);border-radius:6px;padding:.6rem .9rem;font-size:.82rem;color:var(--green);margin-bottom:1rem;display:none}
+
+/* ═══════════════════════════════════════════════════════
+   APP SHELL
+═══════════════════════════════════════════════════════ */
+#app{display:none}
+.shell{display:flex;min-height:100vh}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:220px;background:var(--bg2);border-right:1px solid var(--border);
+  display:flex;flex-direction:column;position:fixed;inset:0 auto 0 0;z-index:100;
+}
+.s-logo{padding:1.2rem 1rem 1rem;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:.7rem}
+.s-logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--blue),var(--cyan));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.s-logo-t{font-family:'Space Mono',monospace;font-size:.85rem;font-weight:700;color:var(--text);line-height:1.2}
+.s-logo-s{font-size:.65rem;color:var(--muted);font-family:'Space Mono',monospace}
+.s-nav{flex:1;padding:.6rem .5rem;display:flex;flex-direction:column;gap:2px;overflow-y:auto}
+.nav-item{
+  display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;
+  border-radius:var(--r-sm);cursor:pointer;color:var(--muted);
+  font-size:.84rem;font-weight:500;transition:all .15s;position:relative;user-select:none;
+}
+.nav-item:hover{background:var(--bg3);color:var(--text)}
+.nav-item.active{background:rgba(45,126,247,.12);color:var(--blue2)}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--blue);border-radius:0 3px 3px 0}
+.nav-ico{font-size:.95rem;width:18px;text-align:center}
+.nav-badge{background:var(--red);color:#fff;border-radius:20px;font-size:.65rem;padding:1px 6px;margin-left:auto;font-family:'Space Mono',monospace}
+.s-section{padding:.6rem .8rem .3rem;font-size:.65rem;font-weight:700;color:var(--muted);letter-spacing:.1em;text-transform:uppercase}
+.s-foot{padding:.9rem 1rem;border-top:1px solid var(--border)}
+.s-user{display:flex;align-items:center;gap:.6rem}
+.s-avatar{width:30px;height:30px;background:linear-gradient(135deg,var(--blue),var(--purple));border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;color:#fff;flex-shrink:0}
+.s-name{font-size:.8rem;font-weight:600;line-height:1.2}
+.s-role{font-size:.68rem;color:var(--muted)}
+.s-logout{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:.9rem;padding:4px;border-radius:4px;transition:color .15s}
+.s-logout:hover{color:var(--red)}
+.s-srm{font-size:.65rem;color:var(--muted);text-align:center;margin-top:.5rem;font-family:'Space Mono',monospace}
+
+/* ── MAIN ── */
+.main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+.topbar{
+  background:var(--bg2);border-bottom:1px solid var(--border);
+  padding:.75rem 1.5rem;display:flex;justify-content:space-between;align-items:center;
+  position:sticky;top:0;z-index:50;
+}
+.topbar-l{font-size:1rem;font-weight:700;font-family:'Space Mono',monospace;color:var(--text)}
+.topbar-r{display:flex;align-items:center;gap:1rem}
+.clock{font-family:'Space Mono',monospace;font-size:.8rem;color:var(--muted);background:var(--bg3);padding:.3rem .7rem;border-radius:6px;border:1px solid var(--border)}
+.live-dot{display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;animation:pulse 2s infinite;margin-right:.4rem}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(15,217,138,.5)}70%{box-shadow:0 0 0 5px transparent}}
+
+/* ── PAGES ── */
+.page{display:none;padding:1.5rem}
+.page.active{display:block}
+
+/* ── CARDS ── */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem}
+.card-hd{font-size:.88rem;font-weight:700;color:var(--text);margin-bottom:1rem;display:flex;align-items:center;gap:.5rem}
+.card-hd-right{margin-left:auto;font-size:.75rem;color:var(--muted);font-weight:400}
+
+/* ── STAT GRID ── */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem}
+.stat-card{
+  background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem 1.3rem;
+  position:relative;overflow:hidden;cursor:default;transition:border-color .2s;
+}
+.stat-card:hover{border-color:var(--border2)}
+.stat-stripe{position:absolute;top:0;left:0;right:0;height:2px}
+.stat-ico{font-size:1.3rem;margin-bottom:.5rem}
+.stat-val{font-size:1.9rem;font-weight:700;font-family:'Space Mono',monospace;line-height:1;margin-bottom:.3rem}
+.stat-lbl{font-size:.75rem;color:var(--muted);font-weight:500}
+.stat-sub{font-size:.7rem;color:var(--muted);margin-top:.2rem}
+.stat-c-blue .stat-stripe{background:var(--blue)}
+.stat-c-red  .stat-stripe{background:var(--red)}
+.stat-c-orange.stat-stripe,.stat-c-orange .stat-stripe{background:var(--orange)}
+.stat-c-green .stat-stripe{background:var(--green)}
+
+/* ── TWO COL ── */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem}
+
+/* ── TABLE ── */
+.table-wrap{overflow-x:auto;border-radius:var(--r);border:1px solid var(--border)}
+.tbl{width:100%;border-collapse:collapse;font-size:.82rem}
+.tbl th{background:var(--bg3);padding:.65rem .9rem;text-align:left;color:var(--muted);font-weight:700;border-bottom:1px solid var(--border);white-space:nowrap;font-size:.75rem;letter-spacing:.04em;text-transform:uppercase}
+.tbl td{padding:.7rem .9rem;border-bottom:1px solid var(--border);vertical-align:middle}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tbody tr:hover td{background:var(--bg3)}
+
+/* ── TOOLBAR ── */
+.toolbar{display:flex;gap:.6rem;margin-bottom:1rem;flex-wrap:wrap;align-items:center}
+.tb-inp,.tb-sel{
+  background:var(--bg2);border:1px solid var(--border);color:var(--text);
+  border-radius:var(--r-sm);padding:.5rem .8rem;font-size:.82rem;outline:none;
+  font-family:'DM Sans',sans-serif;transition:border-color .2s;
+}
+.tb-inp{flex:1;min-width:180px}.tb-inp::placeholder{color:var(--muted)}
+.tb-inp:focus,.tb-sel:focus{border-color:var(--blue)}
+option{background:var(--bg3)}
+
+/* ── BUTTONS ── */
+.btn{border:none;border-radius:var(--r-sm);padding:.5rem 1rem;cursor:pointer;font-size:.82rem;font-weight:600;transition:all .15s;font-family:'DM Sans',sans-serif}
+.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:var(--blue2)}
+.btn-outline{background:transparent;border:1px solid var(--border);color:var(--text)}.btn-outline:hover{border-color:var(--blue2);color:var(--blue2)}
+.btn-danger{background:var(--red);color:#fff}.btn-danger:hover{opacity:.85}
+.btn-sm{padding:.3rem .65rem;font-size:.75rem}
+.btn-xs{padding:.2rem .5rem;font-size:.7rem}
+.btn-green{background:var(--green);color:#080c14}
+.btn-icon{background:none;border:none;cursor:pointer;font-size:1rem;color:var(--muted);padding:4px;border-radius:4px;transition:color .15s}
+.btn-icon:hover{color:var(--text)}
+
+/* ── PILLS ── */
+.pill{display:inline-flex;align-items:center;border-radius:20px;padding:2px 9px;font-size:.72rem;font-weight:600}
+.pill-stable   {background:rgba(15,217,138,.1);color:var(--green)}
+.pill-critical {background:rgba(247,56,90,.1);color:var(--red)}
+.pill-discharged{background:rgba(93,114,153,.1);color:var(--muted2)}
+.pill-low  {background:rgba(15,217,138,.1);color:var(--green)}
+.pill-medium{background:rgba(255,140,56,.1);color:var(--orange)}
+.pill-high {background:rgba(247,56,90,.1);color:var(--red)}
+.pill-critical-r{background:rgba(247,56,90,.2);color:#ff4570}
+.pill-blue {background:rgba(45,126,247,.1);color:var(--blue2)}
+.pill-purple{background:rgba(154,108,247,.1);color:var(--purple)}
+
+/* ── RISK BAR ── */
+.risk-bar{width:64px;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden;display:inline-block;vertical-align:middle;margin-right:4px}
+.risk-fill{height:100%;border-radius:3px;transition:width .4s}
+
+/* ── VITAL CHIPS ── */
+.vitals-mini{display:flex;flex-wrap:wrap;gap:.3rem}
+.v-chip{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:2px 6px;font-size:.72rem;white-space:nowrap;font-family:'Space Mono',monospace}
+.v-chip.warn{border-color:rgba(255,140,56,.5);color:var(--orange)}
+.v-chip.danger{border-color:rgba(247,56,90,.5);color:var(--red)}
+.v-chip.ok{border-color:rgba(15,217,138,.3);color:var(--green)}
+
+/* ── FORM ── */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+.fg{display:flex;flex-direction:column;gap:.3rem}
+.fg.full{grid-column:1/-1}
+.fg label{font-size:.73rem;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select,.fg textarea{
+  background:var(--bg3);border:1px solid var(--border2);color:var(--text);
+  border-radius:var(--r-sm);padding:.55rem .8rem;font-size:.85rem;font-family:'DM Sans',sans-serif;
+  outline:none;transition:border-color .2s;width:100%;
+}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--blue)}
+.fg input::placeholder{color:var(--muted)}
+
+/* ── MODAL ── */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;backdrop-filter:blur(2px)}
+.overlay.open{display:block}
+.modal{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(.95);
+  background:var(--bg2);border:1px solid var(--border2);border-radius:16px;
+  padding:1.5rem;width:560px;max-width:95vw;z-index:300;display:none;
+  max-height:90vh;overflow-y:auto;transition:transform .2s;
+}
+.modal.open{display:block;transform:translate(-50%,-50%) scale(1)}
+.modal-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border)}
+.modal-hd h3{font-size:1rem;font-weight:700}
+.modal-close{background:none;border:none;color:var(--muted);font-size:1.1rem;cursor:pointer;padding:4px 8px;border-radius:6px;transition:all .15s}
+.modal-close:hover{background:var(--bg3);color:var(--text)}
+
+/* ── ALERT ITEMS ── */
+.alert-list{display:flex;flex-direction:column;gap:.5rem}
+.a-item{background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.65rem .9rem;display:flex;justify-content:space-between;align-items:flex-start;gap:.5rem}
+.a-item.critical{border-left:3px solid var(--red)}
+.a-item.high    {border-left:3px solid var(--orange)}
+.a-item.medium  {border-left:3px solid var(--orange)}
+.a-item.low     {border-left:3px solid var(--green)}
+.a-text{font-size:.82rem;font-weight:500}
+.a-meta{font-size:.73rem;color:var(--muted);margin-top:2px}
+
+/* ── ALGO CARDS ── */
+.algo-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.algo-card{background:var(--bg3);border:1px solid var(--border);border-radius:var(--r);padding:1rem;transition:border-color .2s}
+.algo-card:hover{border-color:var(--blue)}
+.algo-ico{font-size:1.6rem;margin-bottom:.6rem}
+.algo-name{font-weight:700;font-size:.9rem;color:var(--blue2);margin-bottom:.3rem}
+.algo-cplx{display:inline-block;background:rgba(154,108,247,.15);color:var(--purple);border-radius:4px;padding:2px 8px;font-size:.72rem;font-family:'Space Mono',monospace;margin-bottom:.4rem}
+.algo-type{font-size:.75rem;color:var(--muted);margin-bottom:.4rem}
+.algo-desc{font-size:.82rem;line-height:1.5}
+
+/* ── DOCTOR CARDS ── */
+.doc-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r);padding:1.2rem;transition:border-color .2s}
+.doc-card:hover{border-color:var(--border2)}
+.doc-avatar{width:50px;height:50px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;margin-bottom:.8rem}
+.doc-name{font-weight:700;font-size:.95rem}
+.doc-spec{color:var(--cyan);font-size:.8rem;margin-bottom:.5rem}
+
+/* ── TREND TAGS ── */
+.trend{font-size:.7rem;padding:1px 7px;border-radius:4px;display:inline-block}
+.trend-rising {background:rgba(247,56,90,.1);color:var(--red)}
+.trend-falling{background:rgba(45,126,247,.1);color:var(--blue2)}
+.trend-stable {background:rgba(15,217,138,.1);color:var(--green)}
+
+/* ── TOAST ── */
+#toasts{position:fixed;bottom:1.2rem;right:1.2rem;z-index:999;display:flex;flex-direction:column;gap:.4rem}
+.toast{background:var(--bg2);border:1px solid var(--border);border-radius:var(--r-sm);padding:.7rem 1rem;font-size:.82rem;box-shadow:var(--shadow);animation:toastIn .3s;min-width:240px}
+.toast.success{border-left:3px solid var(--green)}.toast.error{border-left:3px solid var(--red)}.toast.info{border-left:3px solid var(--blue)}
+@keyframes toastIn{from{transform:translateX(110%);opacity:0}to{transform:none;opacity:1}}
+
+/* ── DETAIL PAGE ── */
+.detail-grid{display:grid;grid-template-columns:320px 1fr;gap:1rem}
+.back-btn{margin-bottom:1rem}
+.vital-detail-box{background:var(--bg3);border-radius:8px;padding:.65rem .8rem}
+.vital-detail-lbl{font-size:.7rem;color:var(--muted);margin-bottom:.2rem}
+.vital-detail-val{font-size:1.2rem;font-weight:700;font-family:'Space Mono',monospace;line-height:1}
+.vital-detail-unit{font-size:.7rem;font-weight:400;color:var(--muted)}
+
+/* ── EMPTY STATE ── */
+.empty{text-align:center;padding:3rem 1rem;color:var(--muted);font-size:.9rem}
+.empty-ico{font-size:2.5rem;margin-bottom:.8rem;opacity:.5}
+
+/* ── SCROLLBAR ── */
+::-webkit-scrollbar{width:5px;height:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+/* ── RESPONSIVE ── */
+@media(max-width:900px){.stat-grid{grid-template-columns:repeat(2,1fr)}.two-col,.detail-grid{grid-template-columns:1fr}}
+@media(max-width:640px){.sidebar{display:none}.main{margin-left:0}.stat-grid{grid-template-columns:1fr 1fr}}
+
+/* ── INPUT ICON GROUP ── */
+.inp-grp{position:relative}.inp-grp .inp-ico{position:absolute;left:.8rem;top:50%;transform:translateY(-50%);color:var(--muted);font-size:.9rem;pointer-events:none}
+.inp-grp .form-input{padding-left:2.4rem}
+
+/* ── VITALS SUMMARY ── */
+.vitals-summary{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem;margin-top:.8rem}
+
+/* Animated gradient line */
+.grad-line{height:2px;background:linear-gradient(90deg,var(--blue),var(--cyan),var(--green),var(--blue));background-size:300% 100%;animation:grad 4s linear infinite;border-radius:2px}
+@keyframes grad{0%{background-position:0% 0}100%{background-position:300% 0}}
+</style>
 </head>
 <body>
 
-<!-- ═══════════ SIDEBAR ═══════════ -->
-<aside class="sidebar" id="sidebar">
-  <div class="sidebar-header">
-    <div class="logo">
-      <span class="logo-icon">🏥</span>
+<!-- ═══════════════ AUTH SCREEN ═══════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🏥</div>
       <div>
-        <div class="logo-title">HealthTrack</div>
-        <div class="logo-sub">SRM Patient Monitor</div>
+        <div class="auth-logo-text">HealthTrack</div>
+        <div class="auth-logo-sub">SRM Ramapuram · Batch 02</div>
       </div>
+    </div>
+    <div class="grad-line" style="margin-bottom:1.5rem"></div>
+
+    <div class="auth-tabs">
+      <div class="auth-tab active" id="tab-login" onclick="switchTab('login')">Login</div>
+      <div class="auth-tab" id="tab-signup" onclick="switchTab('signup')">Sign Up</div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-form">
+      <div class="auth-title">Welcome back, Doctor</div>
+      <div class="auth-sub">Sign in to access the patient monitoring dashboard</div>
+      <div class="demo-hint">🔑 Demo credentials: <strong>admin@srm.edu</strong> / <strong>srm@2025</strong></div>
+      <div class="auth-error" id="login-error"></div>
+      <label class="form-label">Email address</label>
+      <div class="inp-grp"><span class="inp-ico">📧</span><input class="form-input" id="l-email" type="email" placeholder="doctor@hospital.com" value="admin@srm.edu"/></div>
+      <label class="form-label">Password</label>
+      <div class="inp-grp"><span class="inp-ico">🔒</span><input class="form-input" id="l-pass" type="password" placeholder="••••••••" value="srm@2025"/></div>
+      <button class="btn-auth" onclick="doLogin()">Sign In →</button>
+      <div class="auth-msg">Don't have an account? <a onclick="switchTab('signup')">Create one</a></div>
+    </div>
+
+    <!-- SIGNUP -->
+    <div id="signup-form" style="display:none">
+      <div class="auth-title">Create Account</div>
+      <div class="auth-sub">Register as a healthcare provider</div>
+      <div class="auth-error" id="signup-error"></div>
+      <div class="auth-success" id="signup-success"></div>
+      <div class="form-row">
+        <div><label class="form-label">First Name</label><input class="form-input" id="s-fname" placeholder="Dr. Farah" /></div>
+        <div><label class="form-label">Last Name</label><input class="form-input" id="s-lname" placeholder="Sheikh" /></div>
+      </div>
+      <label class="form-label">Email Address</label>
+      <div class="inp-grp"><span class="inp-ico">📧</span><input class="form-input" id="s-email" type="email" placeholder="doctor@hospital.com"/></div>
+      <label class="form-label">Specialization</label>
+      <select class="form-input" id="s-spec" style="margin-bottom:1rem">
+        <option>Cardiology</option><option>General Medicine</option><option>ICU / Critical Care</option>
+        <option>Diabetology</option><option>Neurology</option><option>Orthopedics</option>
+      </select>
+      <div class="form-row">
+        <div><label class="form-label">Password</label><input class="form-input" id="s-pass" type="password" placeholder="Min 6 characters"/></div>
+        <div><label class="form-label">Confirm Password</label><input class="form-input" id="s-pass2" type="password" placeholder="Repeat password"/></div>
+      </div>
+      <button class="btn-auth" onclick="doSignup()">Create Account →</button>
+      <div class="auth-msg">Already have an account? <a onclick="switchTab('login')">Sign in</a></div>
     </div>
   </div>
-  <nav class="sidebar-nav">
-    <a class="nav-item active" onclick="showPage('dashboard')" id="nav-dashboard">
-      <span class="nav-icon">📊</span> Dashboard
-    </a>
-    <a class="nav-item" onclick="showPage('patients')" id="nav-patients">
-      <span class="nav-icon">👥</span> Patients
-    </a>
-    <a class="nav-item" onclick="showPage('vitals')" id="nav-vitals">
-      <span class="nav-icon">📈</span> Add Vitals
-    </a>
-    <a class="nav-item" onclick="showPage('alerts')" id="nav-alerts">
-      <span class="nav-icon">🔔</span> Alerts
-      <span class="badge" id="alert-badge">0</span>
-    </a>
-    <a class="nav-item" onclick="showPage('doctors')" id="nav-doctors">
-      <span class="nav-icon">👨‍⚕️</span> Doctors
-    </a>
-    <a class="nav-item" onclick="showPage('algorithms')" id="nav-algorithms">
-      <span class="nav-icon">🧮</span> DAA Info
-    </a>
-  </nav>
-  <div class="sidebar-footer">
-    <div class="srm-badge">SRM Ramapuram · Batch 02</div>
-  </div>
-</aside>
+</div>
 
-<!-- ═══════════ MAIN ═══════════ -->
-<main class="main" id="main">
+<!-- ═══════════════ APP ═══════════════ -->
+<div id="app">
+<div class="shell">
 
-  <!-- TOP BAR -->
-  <header class="topbar">
-    <div class="topbar-left">
-      <span id="page-title">Dashboard</span>
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="s-logo">
+      <div class="s-logo-icon">🏥</div>
+      <div><div class="s-logo-t">HealthTrack</div><div class="s-logo-s">SRM · Batch 02</div></div>
     </div>
-    <div class="topbar-right">
-      <span class="time-display" id="clock"></span>
-      <span class="topbar-user">Dr. Admin</span>
-    </div>
-  </header>
-
-  <!-- ── DASHBOARD PAGE ────────────────────── -->
-  <section class="page active" id="page-dashboard">
-    <div class="stat-grid">
-      <div class="stat-card blue">
-        <div class="stat-icon">👥</div>
-        <div class="stat-val" id="stat-total">—</div>
-        <div class="stat-label">Total Patients</div>
+    <nav class="s-nav">
+      <div class="s-section">Main</div>
+      <div class="nav-item active" id="nav-dashboard" onclick="showPage('dashboard')"><span class="nav-ico">📊</span> Dashboard</div>
+      <div class="nav-item" id="nav-patients" onclick="showPage('patients')"><span class="nav-ico">👥</span> Patients</div>
+      <div class="nav-item" id="nav-vitals" onclick="showPage('vitals')"><span class="nav-ico">📈</span> Add Vitals</div>
+      <div class="s-section" style="margin-top:.5rem">Monitoring</div>
+      <div class="nav-item" id="nav-alerts" onclick="showPage('alerts')"><span class="nav-ico">🔔</span> Alerts <span class="nav-badge" id="alert-badge">0</span></div>
+      <div class="nav-item" id="nav-doctors" onclick="showPage('doctors')"><span class="nav-ico">👨‍⚕️</span> Doctors</div>
+      <div class="s-section" style="margin-top:.5rem">Academic</div>
+      <div class="nav-item" id="nav-algorithms" onclick="showPage('algorithms')"><span class="nav-ico">🧮</span> DAA Algorithms</div>
+      <div class="nav-item" id="nav-dbms" onclick="showPage('dbms')"><span class="nav-ico">🗄️</span> DBMS Schema</div>
+    </nav>
+    <div class="s-foot">
+      <div class="s-user">
+        <div class="s-avatar" id="user-avatar">D</div>
+        <div><div class="s-name" id="user-name">Dr. Admin</div><div class="s-role" id="user-role">Cardiology</div></div>
+        <button class="s-logout" title="Logout" onclick="logout()">⇥</button>
       </div>
-      <div class="stat-card red">
-        <div class="stat-icon">⚠️</div>
-        <div class="stat-val" id="stat-critical">—</div>
-        <div class="stat-label">Critical</div>
-      </div>
-      <div class="stat-card orange">
-        <div class="stat-icon">🔔</div>
-        <div class="stat-val" id="stat-alerts">—</div>
-        <div class="stat-label">Unread Alerts</div>
-      </div>
-      <div class="stat-card green">
-        <div class="stat-icon">📋</div>
-        <div class="stat-val" id="stat-vitals">—</div>
-        <div class="stat-label">Vitals Today</div>
-      </div>
+      <div class="s-srm">Ramapuram Campus, Chennai-89</div>
     </div>
+  </aside>
 
-    <div class="row-2col">
-      <!-- Ward Summary -->
-      <div class="card">
-        <div class="card-header">Ward Overview</div>
-        <canvas id="wardChart" height="220"></canvas>
+  <!-- MAIN -->
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-l" id="page-title">Dashboard</div>
+      <div class="topbar-r">
+        <span><span class="live-dot"></span><span style="font-size:.75rem;color:var(--green)">Live</span></span>
+        <div class="clock" id="clock">--:--:--</div>
       </div>
-      <!-- Recent Alerts -->
-      <div class="card">
-        <div class="card-header">Recent Alerts</div>
-        <div id="recent-alerts-list" class="alert-list"></div>
+    </header>
+
+    <!-- ── DASHBOARD ── -->
+    <section class="page active" id="page-dashboard">
+      <div class="stat-grid">
+        <div class="stat-card stat-c-blue"><div class="stat-stripe"></div><div class="stat-ico">👥</div><div class="stat-val" id="st-total">—</div><div class="stat-lbl">Total Patients</div><div class="stat-sub">across all wards</div></div>
+        <div class="stat-card stat-c-red"><div class="stat-stripe"></div><div class="stat-ico">⚠️</div><div class="stat-val" id="st-crit">—</div><div class="stat-lbl">Critical</div><div class="stat-sub">need immediate attention</div></div>
+        <div class="stat-card stat-c-orange"><div class="stat-stripe"></div><div class="stat-ico">🔔</div><div class="stat-val" id="st-alerts">—</div><div class="stat-lbl">Unread Alerts</div><div class="stat-sub">awaiting review</div></div>
+        <div class="stat-card stat-c-green"><div class="stat-stripe"></div><div class="stat-ico">📋</div><div class="stat-val" id="st-vitals">—</div><div class="stat-lbl">Vitals Today</div><div class="stat-sub">recorded readings</div></div>
       </div>
-    </div>
-  </section>
-
-  <!-- ── PATIENTS PAGE ─────────────────────── -->
-  <section class="page" id="page-patients">
-    <div class="toolbar">
-      <input type="text" id="search-box" placeholder="🔍 Search patient name..." oninput="loadPatients()" />
-      <select id="filter-ward" onchange="loadPatients()">
-        <option value="">All Wards</option>
-        <option>Cardiology</option><option>ICU</option>
-        <option>General</option><option>Diabetics</option>
-      </select>
-      <select id="filter-status" onchange="loadPatients()">
-        <option value="">All Status</option>
-        <option>Stable</option><option>Critical</option><option>Discharged</option>
-      </select>
-      <select id="sort-by" onchange="loadPatients()">
-        <option value="risk">Sort: Risk ↓</option>
-        <option value="name">Sort: Name</option>
-        <option value="age">Sort: Age</option>
-      </select>
-      <button class="btn btn-primary" onclick="openAddPatient()">+ Add Patient</button>
-    </div>
-    <div class="table-wrap">
-      <table class="data-table" id="patients-table">
-        <thead>
-          <tr>
-            <th>Patient</th><th>Age/Gender</th><th>Ward/Room</th>
-            <th>Condition</th><th>Doctor</th>
-            <th>Latest Vitals</th><th>Risk</th><th>Status</th><th>Action</th>
-          </tr>
-        </thead>
-        <tbody id="patients-tbody"></tbody>
-      </table>
-    </div>
-  </section>
-
-  <!-- ── PATIENT DETAIL (modal-style page) ──── -->
-  <section class="page" id="page-patient-detail">
-    <button class="btn btn-outline back-btn" onclick="showPage('patients')">← Back to Patients</button>
-    <div id="patient-detail-content"></div>
-  </section>
-
-  <!-- ── VITALS PAGE ───────────────────────── -->
-  <section class="page" id="page-vitals">
-    <div class="card" style="max-width:680px;margin:auto">
-      <div class="card-header">📝 Record New Vital Reading</div>
-      <div class="form-grid">
-        <div class="form-group full">
-          <label>Patient</label>
-          <select id="vital-patient-id">
-            <option value="">— Select Patient —</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label>Heart Rate (bpm)</label>
-          <input type="number" id="v-hr" placeholder="60–100" />
-        </div>
-        <div class="form-group">
-          <label>Systolic BP (mmHg)</label>
-          <input type="number" id="v-sbp" placeholder="90–140" />
-        </div>
-        <div class="form-group">
-          <label>Diastolic BP (mmHg)</label>
-          <input type="number" id="v-dbp" placeholder="60–90" />
-        </div>
-        <div class="form-group">
-          <label>Oxygen Level (SpO2 %)</label>
-          <input type="number" id="v-spo2" placeholder="95–100" step="0.1" />
-        </div>
-        <div class="form-group">
-          <label>Temperature (°C)</label>
-          <input type="number" id="v-temp" placeholder="36.5–37.5" step="0.1" />
-        </div>
-        <div class="form-group">
-          <label>Glucose (mg/dL)</label>
-          <input type="number" id="v-glu" placeholder="70–140" />
-        </div>
-        <div class="form-group">
-          <label>Source</label>
-          <select id="v-source">
-            <option>Manual</option><option>Wearable</option><option>EHR</option>
-          </select>
-        </div>
+      <div class="two-col">
+        <div class="card"><div class="card-hd">🏥 Ward Overview <span class="card-hd-right">patients by ward</span></div><canvas id="wardChart" height="200"></canvas></div>
+        <div class="card"><div class="card-hd">🔔 Recent Alerts</div><div id="dash-alerts" class="alert-list"></div></div>
       </div>
-      <button class="btn btn-primary" style="margin-top:1rem;width:100%" onclick="submitVital()">
-        Submit Vital Reading
-      </button>
-      <div id="vital-result" style="margin-top:1rem"></div>
-    </div>
-  </section>
+      <div style="margin-top:1rem">
+        <div class="card"><div class="card-hd">📊 Vitals Snapshot — All Active Patients</div><canvas id="overviewChart" height="100"></canvas></div>
+      </div>
+    </section>
 
-  <!-- ── ALERTS PAGE ───────────────────────── -->
-  <section class="page" id="page-alerts">
-    <div id="alerts-content"></div>
-  </section>
+    <!-- ── PATIENTS ── -->
+    <section class="page" id="page-patients">
+      <div class="toolbar">
+        <input class="tb-inp" id="search-box" placeholder="🔍 Search patient…" oninput="loadPatients()"/>
+        <select class="tb-sel" id="f-ward" onchange="loadPatients()"><option value="">All Wards</option><option>Cardiology</option><option>ICU</option><option>General</option><option>Diabetics</option></select>
+        <select class="tb-sel" id="f-status" onchange="loadPatients()"><option value="">All Status</option><option>Stable</option><option>Critical</option><option>Discharged</option></select>
+        <select class="tb-sel" id="f-sort" onchange="loadPatients()"><option value="risk">Risk ↓</option><option value="name">Name A–Z</option><option value="age">Age ↓</option></select>
+        <button class="btn btn-primary" onclick="openAddPatient()">+ Add Patient</button>
+      </div>
+      <div class="table-wrap">
+        <table class="tbl">
+          <thead><tr><th>Patient</th><th>Age / Gender</th><th>Ward / Room</th><th>Condition</th><th>Doctor</th><th>Latest Vitals</th><th>Risk Score</th><th>Status</th><th>Action</th></tr></thead>
+          <tbody id="patients-tbody"></tbody>
+        </table>
+      </div>
+    </section>
 
-  <!-- ── DOCTORS PAGE ─────────────────────── -->
-  <section class="page" id="page-doctors">
-    <div class="card-grid" id="doctors-grid"></div>
-  </section>
+    <!-- ── PATIENT DETAIL ── -->
+    <section class="page" id="page-patient-detail">
+      <button class="btn btn-outline btn-sm back-btn" onclick="showPage('patients')">← Back to Patients</button>
+      <div id="patient-detail-content"></div>
+    </section>
 
-  <!-- ── ALGORITHMS PAGE ───────────────────── -->
-  <section class="page" id="page-algorithms">
-    <div class="card">
-      <div class="card-header">🧮 DAA — Design and Analysis of Algorithms</div>
-      <p style="margin-bottom:1.5rem;color:var(--text-muted)">
-        Six algorithms power this monitoring system. Each is applied in real-time as patient data flows through the system.
-      </p>
-      <div id="algo-list" class="algo-grid"></div>
-    </div>
-  </section>
+    <!-- ── VITALS ── -->
+    <section class="page" id="page-vitals">
+      <div class="card" style="max-width:660px;margin:auto">
+        <div class="card-hd">📝 Record New Vital Reading</div>
+        <div class="form-grid">
+          <div class="fg full"><label>Select Patient *</label>
+            <select id="v-pid"><option value="">— Choose patient —</option></select>
+          </div>
+          <div class="fg"><label>Heart Rate (bpm)</label><input type="number" id="v-hr" placeholder="60–100"/></div>
+          <div class="fg"><label>SpO2 / Oxygen (%)</label><input type="number" id="v-spo2" placeholder="95–100" step=".1"/></div>
+          <div class="fg"><label>Systolic BP (mmHg)</label><input type="number" id="v-sbp" placeholder="90–140"/></div>
+          <div class="fg"><label>Diastolic BP (mmHg)</label><input type="number" id="v-dbp" placeholder="60–90"/></div>
+          <div class="fg"><label>Temperature (°C)</label><input type="number" id="v-temp" placeholder="36.5–37.5" step=".1"/></div>
+          <div class="fg"><label>Glucose (mg/dL)</label><input type="number" id="v-glu" placeholder="70–140"/></div>
+          <div class="fg"><label>Source</label>
+            <select id="v-src"><option>Manual</option><option>Wearable</option><option>EHR</option></select>
+          </div>
+        </div>
+        <button class="btn btn-primary" style="margin-top:1rem;width:100%" onclick="submitVital()">✅ Submit Vital Reading</button>
+        <div id="vital-result" style="margin-top:1rem"></div>
+      </div>
+    </section>
 
-</main>
+    <!-- ── ALERTS ── -->
+    <section class="page" id="page-alerts">
+      <div id="alerts-content"></div>
+    </section>
 
-<!-- ═══════════ MODALS ═══════════ -->
-<div class="modal-overlay" id="modal-overlay" onclick="closeModal()"></div>
+    <!-- ── DOCTORS ── -->
+    <section class="page" id="page-doctors">
+      <div class="card-grid" id="doctors-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:1rem"></div>
+    </section>
 
-<!-- Add Patient Modal -->
-<div class="modal" id="add-patient-modal">
-  <div class="modal-header">
-    <h3>Add New Patient</h3>
-    <button class="modal-close" onclick="closeModal()">✕</button>
-  </div>
+    <!-- ── ALGORITHMS ── -->
+    <section class="page" id="page-algorithms">
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-hd">🧮 Design & Analysis of Algorithms — Applied in HealthTrack</div>
+        <p style="color:var(--muted);font-size:.85rem">Six algorithms power real-time patient risk scoring, alert routing, and vital trend analysis in this monitoring system.</p>
+      </div>
+      <div class="algo-grid" id="algo-grid"></div>
+    </section>
+
+    <!-- ── DBMS ── -->
+    <section class="page" id="page-dbms">
+      <div class="card" style="margin-bottom:1rem">
+        <div class="card-hd">🗄️ DBMS — Entity Relationship & Table Structure</div>
+        <p style="color:var(--muted);font-size:.85rem;margin-bottom:1rem">Normalized relational schema (3NF) with SQL queries used in the Healthcare Patient Monitoring System.</p>
+        <div class="grad-line"></div>
+      </div>
+      <div id="dbms-content"></div>
+    </section>
+
+  </main>
+</div>
+</div>
+
+<!-- MODALS -->
+<div class="overlay" id="overlay" onclick="closeModal()"></div>
+<div class="modal" id="modal-add-patient">
+  <div class="modal-hd"><h3>➕ Add New Patient</h3><button class="modal-close" onclick="closeModal()">✕</button></div>
   <div class="form-grid">
-    <div class="form-group full"><label>Full Name *</label><input type="text" id="p-name" /></div>
-    <div class="form-group"><label>Age *</label><input type="number" id="p-age" /></div>
-    <div class="form-group"><label>Gender</label>
-      <select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select>
-    </div>
-    <div class="form-group"><label>Blood Group</label>
-      <select id="p-bg"><option>O+</option><option>O-</option><option>A+</option><option>A-</option>
-        <option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select>
-    </div>
-    <div class="form-group"><label>Ward *</label>
-      <select id="p-ward"><option>Cardiology</option><option>ICU</option><option>General</option><option>Diabetics</option></select>
-    </div>
-    <div class="form-group"><label>Room No</label><input type="text" id="p-room" /></div>
-    <div class="form-group full"><label>Condition *</label><input type="text" id="p-condition" /></div>
-    <div class="form-group full"><label>Doctor</label>
-      <select id="p-doctor"><option value="">— Select —</option></select>
-    </div>
-    <div class="form-group full"><label>Contact Phone</label><input type="text" id="p-phone" /></div>
+    <div class="fg full"><label>Full Name *</label><input id="p-name" placeholder="Patient Full Name"/></div>
+    <div class="fg"><label>Age *</label><input type="number" id="p-age" placeholder="e.g. 45"/></div>
+    <div class="fg"><label>Gender</label><select id="p-gender"><option>Male</option><option>Female</option><option>Other</option></select></div>
+    <div class="fg"><label>Blood Group</label><select id="p-bg"><option>O+</option><option>O-</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option></select></div>
+    <div class="fg"><label>Ward *</label><select id="p-ward"><option>Cardiology</option><option>ICU</option><option>General</option><option>Diabetics</option></select></div>
+    <div class="fg"><label>Room No</label><input id="p-room" placeholder="e.g. 204A"/></div>
+    <div class="fg full"><label>Condition / Diagnosis *</label><input id="p-cond" placeholder="e.g. Hypertension, Diabetes Type 2"/></div>
+    <div class="fg full"><label>Assigned Doctor</label><select id="p-doc"><option value="">— None —</option></select></div>
+    <div class="fg full"><label>Contact Phone</label><input id="p-phone" placeholder="+91 9876543210"/></div>
   </div>
   <button class="btn btn-primary" style="margin-top:1rem;width:100%" onclick="submitPatient()">Save Patient</button>
 </div>
 
-<script src="js/app.js"></script>
+<div id="toasts"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+// DATA STORE (in-memory — replace with real API calls)
+// ═══════════════════════════════════════════════════════
+
+const STORE = {
+  users: [
+    { email:'admin@srm.edu', password:'srm@2025', name:'Mohankumar R', role:'Cardiology', id:1 },
+    { email:'farah@srm.edu', password:'farah123', name:'Farah Sheik', role:'General Medicine', id:2 },
+    { email:'pallavi@srm.edu', password:'pallavi123', name:'Pallavi Nagalla', role:'ICU / Critical Care', id:3 },
+    { email:'harinisha@srm.edu', password:'hari123', name:'Harinisha S', role:'Diabetology', id:4 },
+  ],
+  doctors: [
+    { id:1, name:'Dr. Mohankumar R', specialty:'Cardiology', email:'mohankumar@srm.edu', phone:'+91 9841234567', ward:'Cardiology', avatar:'👨‍⚕️' },
+    { id:2, name:'Dr. Ananya Krishnan', specialty:'ICU / Critical Care', email:'ananya@srm.edu', phone:'+91 9841234568', ward:'ICU', avatar:'👩‍⚕️' },
+    { id:3, name:'Dr. Rajesh Subramaniam', specialty:'General Medicine', email:'rajesh@srm.edu', phone:'+91 9841234569', ward:'General', avatar:'👨‍⚕️' },
+    { id:4, name:'Dr. Deepa Menon', specialty:'Diabetology', email:'deepa@srm.edu', phone:'+91 9841234570', ward:'Diabetics', avatar:'👩‍⚕️' },
+  ],
+  patients: [
+    { id:1, name:'Arjun Mehta', age:62, gender:'Male', blood_group:'B+', ward:'Cardiology', room:'101A', condition:'Acute Myocardial Infarction', doctor_id:1, status:'Critical', phone:'+91 9800001111' },
+    { id:2, name:'Lakshmi Patel', age:54, gender:'Female', blood_group:'A+', ward:'Cardiology', room:'102B', condition:'Hypertension Stage II', doctor_id:1, status:'Stable', phone:'+91 9800002222' },
+    { id:3, name:'Ravi Shankar', age:71, gender:'Male', blood_group:'O+', ward:'ICU', room:'ICU-3', condition:'Respiratory Failure', doctor_id:2, status:'Critical', phone:'+91 9800003333' },
+    { id:4, name:'Meera Nair', age:45, gender:'Female', blood_group:'AB-', ward:'General', room:'201C', condition:'Post-Surgical Recovery', doctor_id:3, status:'Stable', phone:'+91 9800004444' },
+    { id:5, name:'Suresh Babu', age:58, gender:'Male', blood_group:'O-', ward:'Diabetics', room:'301A', condition:'Type 2 Diabetes, DKA', doctor_id:4, status:'Critical', phone:'+91 9800005555' },
+    { id:6, name:'Priya Ramachandran', age:39, gender:'Female', blood_group:'A-', ward:'General', room:'202A', condition:'Viral Fever, Dehydration', doctor_id:3, status:'Stable', phone:'+91 9800006666' },
+    { id:7, name:'Karthik Iyer', age:67, gender:'Male', blood_group:'B-', ward:'Cardiology', room:'103C', condition:'Atrial Fibrillation', doctor_id:1, status:'Stable', phone:'+91 9800007777' },
+    { id:8, name:'Anitha Sundar', age:82, gender:'Female', blood_group:'O+', ward:'ICU', room:'ICU-5', condition:'Multi-organ Dysfunction', doctor_id:2, status:'Critical', phone:'+91 9800008888' },
+  ],
+  vitals: {},   // keyed by patient_id → array
+  alerts: [],
+  nextId: { patient: 9, alert: 1 },
+};
+
+// Seed vitals for each patient
+function seedVitals() {
+  STORE.patients.forEach(p => {
+    STORE.vitals[p.id] = [];
+    const isCrit = p.status === 'Critical';
+    for (let i = 11; i >= 0; i--) {
+      const t = new Date(Date.now() - i * 25 * 60000);
+      STORE.vitals[p.id].push({
+        id: Date.now() + Math.random(),
+        patient_id: p.id,
+        heart_rate: isCrit ? rnd(95,145) : rnd(62,88),
+        systolic_bp: isCrit ? rnd(150,185) : rnd(110,135),
+        diastolic_bp: isCrit ? rnd(95,115) : rnd(70,88),
+        oxygen_level: isCrit ? rnd(88,95,.1) : rnd(96,100,.1),
+        temperature: isCrit ? rnd(38.2,39.5,.1) : rnd(36.5,37.3,.1),
+        glucose_level: isCrit ? rnd(180,280) : rnd(80,130),
+        source: ['Wearable','Manual','EHR'][Math.floor(Math.random()*3)],
+        recorded_at: t.toISOString(),
+      });
+    }
+  });
+  // Seed initial alerts
+  STORE.alerts = [
+    { id:STORE.nextId.alert++, patient_id:1, patient_name:'Arjun Mehta', ward:'Cardiology', room:'101A', alert_type:'High Heart Rate', message:'Heart rate 138 bpm exceeds threshold (100 bpm)', severity:'Critical', is_read:false, created_at:new Date(Date.now()-12*60000).toISOString() },
+    { id:STORE.nextId.alert++, patient_id:3, patient_name:'Ravi Shankar', ward:'ICU', room:'ICU-3', alert_type:'Low Oxygen', message:'SpO2 dropped to 89% — immediate attention required', severity:'Critical', is_read:false, created_at:new Date(Date.now()-8*60000).toISOString() },
+    { id:STORE.nextId.alert++, patient_id:5, patient_name:'Suresh Babu', ward:'Diabetics', room:'301A', alert_type:'High Glucose', message:'Glucose level 242 mg/dL — DKA risk elevated', severity:'High', is_read:false, created_at:new Date(Date.now()-3*60000).toISOString() },
+    { id:STORE.nextId.alert++, patient_id:8, patient_name:'Anitha Sundar', ward:'ICU', room:'ICU-5', alert_type:'High Blood Pressure', message:'Systolic BP 178 mmHg — hypertensive urgency', severity:'Critical', is_read:false, created_at:new Date(Date.now()-18*60000).toISOString() },
+  ];
+}
+seedVitals();
+function rnd(lo, hi, step=1){ return Math.round((lo + Math.random()*(hi-lo)) / step) * step; }
+
+// ═══════════════════════════════════════════════════════
+// AUTH
+// ═══════════════════════════════════════════════════════
+
+let currentUser = null;
+
+function switchTab(tab) {
+  document.getElementById('tab-login').classList.toggle('active', tab==='login');
+  document.getElementById('tab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('login-form').style.display = tab==='login' ? '' : 'none';
+  document.getElementById('signup-form').style.display = tab==='signup' ? '' : 'none';
+  hideAuthMsg();
+}
+function hideAuthMsg() {
+  ['login-error','signup-error','signup-success'].forEach(id => {
+    const el = document.getElementById(id); if(el){el.style.display='none';el.textContent='';}
+  });
+}
+function showAuthMsg(id, msg) { const el=document.getElementById(id); el.style.display='block'; el.textContent=msg; }
+
+function doLogin() {
+  const email = document.getElementById('l-email').value.trim().toLowerCase();
+  const pass = document.getElementById('l-pass').value;
+  hideAuthMsg();
+  if (!email || !pass) { showAuthMsg('login-error','Please fill in all fields.'); return; }
+  const user = STORE.users.find(u => u.email.toLowerCase()===email && u.password===pass);
+  if (!user) { showAuthMsg('login-error','Invalid email or password. Try admin@srm.edu / srm@2025'); return; }
+  currentUser = user;
+  enterApp();
+}
+
+function doSignup() {
+  const fname = document.getElementById('s-fname').value.trim();
+  const lname = document.getElementById('s-lname').value.trim();
+  const email = document.getElementById('s-email').value.trim().toLowerCase();
+  const spec  = document.getElementById('s-spec').value;
+  const pass  = document.getElementById('s-pass').value;
+  const pass2 = document.getElementById('s-pass2').value;
+  hideAuthMsg();
+  if (!fname||!lname||!email||!pass) { showAuthMsg('signup-error','All fields are required.'); return; }
+  if (pass.length < 6) { showAuthMsg('signup-error','Password must be at least 6 characters.'); return; }
+  if (pass !== pass2) { showAuthMsg('signup-error','Passwords do not match.'); return; }
+  if (STORE.users.find(u=>u.email.toLowerCase()===email)) { showAuthMsg('signup-error','This email is already registered.'); return; }
+  const newUser = { email, password:pass, name:`${fname} ${lname}`, role:spec, id: STORE.users.length+1 };
+  STORE.users.push(newUser);
+  // Also add as doctor
+  STORE.doctors.push({ id:STORE.doctors.length+1, name:`Dr. ${fname} ${lname}`, specialty:spec, email, phone:'—', ward:spec.includes('ICU')?'ICU':spec.includes('Cardio')?'Cardiology':spec.includes('Diab')?'Diabetics':'General', avatar:'👨‍⚕️' });
+  showAuthMsg('signup-success','✅ Account created! Logging you in…');
+  setTimeout(() => { currentUser = newUser; enterApp(); }, 1200);
+}
+
+function enterApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app').style.display = 'block';
+  const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+  document.getElementById('user-avatar').textContent = initials;
+  document.getElementById('user-name').textContent = currentUser.name;
+  document.getElementById('user-role').textContent = currentUser.role;
+  showPage('dashboard');
+}
+
+function logout() {
+  currentUser = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('auth-screen').style.display = 'flex';
+}
+
+// ═══════════════════════════════════════════════════════
+// NAVIGATION
+// ═══════════════════════════════════════════════════════
+
+const PAGE_TITLES = {
+  dashboard:'Dashboard', patients:'Patients', vitals:'Record Vitals',
+  alerts:'Alerts', doctors:'Doctors', algorithms:'DAA Algorithms',
+  dbms:'DBMS Schema', 'patient-detail':'Patient Detail',
+};
+
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById(`page-${name}`).classList.add('active');
+  const nav = document.getElementById(`nav-${name}`); if(nav) nav.classList.add('active');
+  document.getElementById('page-title').textContent = PAGE_TITLES[name]||name;
+  const loaders = {
+    dashboard: loadDashboard, patients: loadPatients,
+    alerts: loadAlerts, doctors: loadDoctors,
+    algorithms: loadAlgorithms, dbms: loadDbms,
+    vitals: populateVitalPatientSelect,
+  };
+  if (loaders[name]) loaders[name]();
+}
+
+// Clock
+function tickClock() { document.getElementById('clock').textContent = new Date().toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
+setInterval(tickClock,1000); tickClock();
+
+// ═══════════════════════════════════════════════════════
+// RISK SCORING  (DAA: weighted scoring algorithm)
+// ═══════════════════════════════════════════════════════
+
+function calcRisk(v) {
+  if (!v) return { score:0, level:'Unknown' };
+  let s = 0;
+  if (v.heart_rate)    { if(v.heart_rate>120||v.heart_rate<50) s+=30; else if(v.heart_rate>100||v.heart_rate<60) s+=15; }
+  if (v.systolic_bp)   { if(v.systolic_bp>160||v.systolic_bp<90) s+=25; else if(v.systolic_bp>140||v.systolic_bp<100) s+=12; }
+  if (v.oxygen_level)  { if(v.oxygen_level<90) s+=30; else if(v.oxygen_level<95) s+=18; }
+  if (v.temperature)   { if(v.temperature>39||v.temperature<36) s+=15; else if(v.temperature>38.5) s+=8; }
+  if (v.glucose_level) { if(v.glucose_level>250||v.glucose_level<60) s+=15; else if(v.glucose_level>180||v.glucose_level<70) s+=8; }
+  s = Math.min(100, s);
+  const level = s>=70?'Critical':s>=45?'High':s>=20?'Medium':'Low';
+  return { score:s, level };
+}
+
+function riskColor(level) {
+  return { Critical:'var(--red)', High:'var(--orange)', Medium:'var(--blue)', Low:'var(--green)' }[level] || 'var(--muted)';
+}
+
+// ═══════════════════════════════════════════════════════
+// ALERTS GENERATION
+// ═══════════════════════════════════════════════════════
+
+function generateAlerts(patientId, v) {
+  const p = STORE.patients.find(x=>x.id===patientId);
+  const triggered = [];
+  const checks = [
+    { cond: v.heart_rate>100, type:'High Heart Rate', msg:`Heart rate ${v.heart_rate} bpm exceeds 100 bpm threshold`, sev:'Critical' },
+    { cond: v.heart_rate<50,  type:'Low Heart Rate',  msg:`Heart rate ${v.heart_rate} bpm below 50 bpm threshold`, sev:'High' },
+    { cond: v.oxygen_level<90, type:'Critical Low Oxygen', msg:`SpO2 ${v.oxygen_level}% — hypoxia danger zone`, sev:'Critical' },
+    { cond: v.oxygen_level<95, type:'Low Oxygen', msg:`SpO2 ${v.oxygen_level}% below normal (95%+)`, sev:'High' },
+    { cond: v.systolic_bp>140, type:'High Blood Pressure', msg:`Systolic BP ${v.systolic_bp} mmHg — hypertension`, sev: v.systolic_bp>160?'Critical':'High' },
+    { cond: v.systolic_bp<90,  type:'Low Blood Pressure', msg:`Systolic BP ${v.systolic_bp} mmHg — hypotension`, sev:'High' },
+    { cond: v.temperature>38.5, type:'Fever Detected', msg:`Temperature ${v.temperature}°C — fever`, sev: v.temperature>39?'High':'Medium' },
+    { cond: v.glucose_level>180, type:'High Glucose', msg:`Glucose ${v.glucose_level} mg/dL — hyperglycemia`, sev: v.glucose_level>250?'Critical':'High' },
+    { cond: v.glucose_level<70, type:'Low Glucose',  msg:`Glucose ${v.glucose_level} mg/dL — hypoglycemia`, sev:'Critical' },
+  ];
+  checks.forEach(c => {
+    if (c.cond) {
+      const a = { id:STORE.nextId.alert++, patient_id:patientId, patient_name:p.name, ward:p.ward, room:p.room, alert_type:c.type, message:c.msg, severity:c.sev, is_read:false, created_at:new Date().toISOString() };
+      STORE.alerts.unshift(a);
+      triggered.push(a);
+    }
+  });
+  return triggered;
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
+
+let wardChart = null, overviewChart = null;
+
+function loadDashboard() {
+  const ps = STORE.patients;
+  const unread = STORE.alerts.filter(a=>!a.is_read).length;
+  let todayVitals = 0;
+  Object.values(STORE.vitals).forEach(arr => {
+    arr.forEach(v => { if(v.recorded_at?.startsWith(new Date().toISOString().slice(0,10))) todayVitals++; });
+  });
+  document.getElementById('st-total').textContent = ps.length;
+  document.getElementById('st-crit').textContent  = ps.filter(p=>p.status==='Critical').length;
+  document.getElementById('st-alerts').textContent = unread;
+  document.getElementById('alert-badge').textContent = unread;
+  updateBadge();
+
+  // Ward chart
+  const wards = ['Cardiology','ICU','General','Diabetics'];
+  const wardTotals = wards.map(w => ps.filter(p=>p.ward===w).length);
+  const wardCrit   = wards.map(w => ps.filter(p=>p.ward===w&&p.status==='Critical').length);
+  if (wardChart) wardChart.destroy();
+  wardChart = new Chart(document.getElementById('wardChart').getContext('2d'), {
+    type:'bar',
+    data:{ labels:wards, datasets:[
+      { label:'Total', data:wardTotals, backgroundColor:'rgba(45,126,247,.55)', borderRadius:5 },
+      { label:'Critical', data:wardCrit, backgroundColor:'rgba(247,56,90,.55)', borderRadius:5 },
+    ]},
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#5d7299', font:{size:11} } } },
+      scales:{ x:{ ticks:{color:'#5d7299'}, grid:{color:'#1e2d47'} }, y:{ ticks:{color:'#5d7299',stepSize:1}, grid:{color:'#1e2d47'}, beginAtZero:true } } }
+  });
+
+  // Recent alerts
+  const dashA = document.getElementById('dash-alerts');
+  const recentA = STORE.alerts.filter(a=>!a.is_read).slice(0,5);
+  dashA.innerHTML = recentA.length === 0
+    ? '<div class="empty"><div class="empty-ico">✅</div>No unread alerts</div>'
+    : recentA.map(a=>`<div class="a-item ${a.severity.toLowerCase()}">
+        <div><div class="a-text"><strong>${a.patient_name}</strong> — ${a.alert_type}</div><div class="a-meta">${a.message}</div></div>
+        <span class="pill pill-${a.severity.toLowerCase()}">${a.severity}</span>
+      </div>`).join('');
+
+  // Overview chart
+  const labels = ps.map(p => p.name.split(' ')[0]);
+  const hrData  = ps.map(p => { const v = latestVital(p.id); return v?.heart_rate || null; });
+  const spo2Data= ps.map(p => { const v = latestVital(p.id); return v?.oxygen_level || null; });
+  if (overviewChart) overviewChart.destroy();
+  overviewChart = new Chart(document.getElementById('overviewChart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Heart Rate (bpm)', data:hrData, borderColor:'var(--red)', backgroundColor:'rgba(247,56,90,.08)', fill:true, tension:.4, pointRadius:4 },
+      { label:'SpO2 (%)', data:spo2Data, borderColor:'var(--blue2)', backgroundColor:'rgba(45,126,247,.08)', fill:true, tension:.4, pointRadius:4 },
+    ]},
+    options:{ responsive:true, plugins:{ legend:{ labels:{ color:'#5d7299', font:{size:11} } } },
+      scales:{ x:{ ticks:{color:'#5d7299'}, grid:{color:'#1e2d47'} }, y:{ ticks:{color:'#5d7299'}, grid:{color:'#1e2d47'}, min:60, max:160 } } }
+  });
+
+  document.getElementById('st-vitals').textContent = Object.values(STORE.vitals).reduce((a,b)=>a+b.length,0);
+}
+
+// ═══════════════════════════════════════════════════════
+// PATIENTS
+// ═══════════════════════════════════════════════════════
+
+function latestVital(pid) { const arr = STORE.vitals[pid]; return arr && arr.length ? arr[arr.length-1] : null; }
+function doctorName(id) { const d = STORE.doctors.find(x=>x.id===id); return d ? d.name : '—'; }
+
+function loadPatients() {
+  const search = (document.getElementById('search-box')?.value||'').toLowerCase();
+  const ward   = document.getElementById('f-ward')?.value||'';
+  const status = document.getElementById('f-status')?.value||'';
+  const sort   = document.getElementById('f-sort')?.value||'risk';
+
+  let ps = STORE.patients.filter(p => {
+    if (search && !p.name.toLowerCase().includes(search)) return false;
+    if (ward   && p.ward !== ward)   return false;
+    if (status && p.status !== status) return false;
+    return true;
+  });
+
+  ps = ps.map(p => ({ ...p, _lv: latestVital(p.id), _risk: calcRisk(latestVital(p.id)) }));
+  ps.sort((a,b) => {
+    if (sort==='risk') return b._risk.score - a._risk.score;
+    if (sort==='name') return a.name.localeCompare(b.name);
+    if (sort==='age')  return b.age - a.age;
+    return 0;
+  });
+
+  const tbody = document.getElementById('patients-tbody');
+  if (ps.length === 0) { tbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:2rem;color:var(--muted)">No patients found.</td></tr>`; return; }
+
+  tbody.innerHTML = ps.map(p => {
+    const v = p._lv; const r = p._risk; const rc = riskColor(r.level);
+    return `<tr>
+      <td><div style="font-weight:600">${p.name}</div><div style="font-size:.72rem;color:var(--muted)">ID #${p.id}</div></td>
+      <td>${p.age} / ${p.gender[0]}</td>
+      <td>${p.ward}<br><span style="font-size:.72rem;color:var(--muted)">${p.room||'—'}</span></td>
+      <td style="max-width:120px;font-size:.8rem">${p.condition}</td>
+      <td style="font-size:.79rem">${doctorName(p.doctor_id)}</td>
+      <td>${v ? `<div class="vitals-mini">
+        ${vChip('❤',v.heart_rate,'bpm',60,100)}
+        ${vChip('💧',v.oxygen_level,'%',95,100)}
+        ${vChip('🩸',v.systolic_bp,'mmHg',90,140)}
+        ${vChip('🌡',v.temperature,'°C',36,37.5)}
+      </div>` : '<span style="color:var(--muted);font-size:.75rem">No readings</span>'}</td>
+      <td>
+        <div style="display:flex;align-items:center;gap:5px">
+          <div class="risk-bar"><div class="risk-fill" style="width:${r.score}%;background:${rc}"></div></div>
+          <span style="font-size:.75rem;color:${rc};font-family:'Space Mono',monospace">${r.score}</span>
+        </div>
+        <div style="font-size:.7rem;color:${rc}">${r.level}</div>
+      </td>
+      <td><span class="pill pill-${p.status.toLowerCase()}">${p.status}</span></td>
+      <td><button class="btn btn-outline btn-sm" onclick="viewPatient(${p.id})">View</button></td>
+    </tr>`;
+  }).join('');
+}
+
+function vChip(ico, val, unit, lo, hi) {
+  if (val==null) return '';
+  const cls = val<lo?'warn':val>hi?'danger':'ok';
+  return `<span class="v-chip ${cls}">${ico}${val}${unit}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// PATIENT DETAIL
+// ═══════════════════════════════════════════════════════
+
+let detailChart = null;
+
+function viewPatient(id) {
+  const p = STORE.patients.find(x=>x.id===id);
+  if (!p) return;
+  const vitals = STORE.vitals[id] || [];
+  const lv = vitals.length ? vitals[vitals.length-1] : {};
+  const r = calcRisk(lv);
+  const rc = riskColor(r.level);
+  const d = STORE.doctors.find(x=>x.id===p.doctor_id);
+  const pa = STORE.alerts.filter(a=>a.patient_id===id).slice(0,5);
+
+  showPage('patient-detail');
+
+  document.getElementById('patient-detail-content').innerHTML = `
+    <div style="display:flex;gap:1rem;flex-wrap:wrap;margin-bottom:1rem">
+      <div style="flex:1;min-width:260px">
+        <h2 style="font-size:1.3rem;margin-bottom:.4rem">${p.name}</h2>
+        <div style="color:var(--muted);font-size:.85rem;margin-bottom:.7rem">${p.condition} · ${p.ward}, Room ${p.room||'—'}</div>
+        <div style="display:flex;gap:.4rem;flex-wrap:wrap">
+          <span class="pill pill-${p.status.toLowerCase()}">${p.status}</span>
+          <span class="pill pill-purple">Risk ${r.score}/100 — ${r.level}</span>
+          <span class="pill" style="background:var(--bg3);color:var(--muted2)">${p.age}y · ${p.gender} · ${p.blood_group}</span>
+        </div>
+      </div>
+      ${d ? `<div class="card" style="min-width:200px">
+        <div style="font-size:.72rem;color:var(--muted);margin-bottom:.4rem">ASSIGNED DOCTOR</div>
+        <div style="font-weight:700">${d.name}</div>
+        <div style="color:var(--cyan);font-size:.8rem">${d.specialty}</div>
+        <div style="color:var(--muted);font-size:.75rem;margin-top:.3rem">${d.email}</div>
+      </div>` : ''}
+    </div>
+    <div class="detail-grid">
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        <div class="card">
+          <div class="card-hd">⚡ Latest Vitals</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem">
+            ${vd('❤️ Heart Rate', lv.heart_rate, 'bpm')}
+            ${vd('💧 SpO2', lv.oxygen_level, '%')}
+            ${vd('🩸 Systolic BP', lv.systolic_bp, 'mmHg')}
+            ${vd('🩸 Diastolic BP', lv.diastolic_bp, 'mmHg')}
+            ${vd('🌡️ Temperature', lv.temperature, '°C')}
+            ${vd('🍬 Glucose', lv.glucose_level, 'mg/dL')}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-hd">🔔 Recent Alerts</div>
+          <div class="alert-list">
+            ${pa.length===0
+              ? '<div class="empty" style="padding:1rem"><div class="empty-ico" style="font-size:1.5rem">✅</div>No alerts</div>'
+              : pa.map(a=>`<div class="a-item ${a.severity.toLowerCase()}"><div><div class="a-text">${a.alert_type}</div><div class="a-meta">${a.message}</div></div><span class="pill pill-${a.severity.toLowerCase()}">${a.severity}</span></div>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="card" style="height:fit-content">
+        <div class="card-hd">📈 Vital Trends — Last 12 Readings</div>
+        <canvas id="detail-chart" height="260"></canvas>
+      </div>
+    </div>`;
+
+  if (detailChart) detailChart.destroy();
+  const recent = vitals.slice(-12);
+  const labels = recent.map(v => v.recorded_at.slice(11,16));
+  detailChart = new Chart(document.getElementById('detail-chart').getContext('2d'), {
+    type:'line',
+    data:{ labels, datasets:[
+      { label:'Heart Rate', data:recent.map(v=>v.heart_rate), borderColor:'#f7385a', backgroundColor:'rgba(247,56,90,.08)', fill:true, tension:.4 },
+      { label:'SpO2 %',    data:recent.map(v=>v.oxygen_level), borderColor:'#2d7ef7', backgroundColor:'rgba(45,126,247,.08)', fill:true, tension:.4 },
+      { label:'Systolic BP', data:recent.map(v=>v.systolic_bp), borderColor:'#9a6cf7', fill:false, tension:.4 },
+      { label:'Glucose',   data:recent.map(v=>v.glucose_level), borderColor:'#ff8c38', fill:false, tension:.4, borderDash:[4,4] },
+    ]},
+    options:{ responsive:true, interaction:{mode:'index',intersect:false},
+      plugins:{ legend:{ labels:{ color:'#5d7299', font:{size:10} } } },
+      scales:{ x:{ ticks:{color:'#5d7299',font:{size:10}}, grid:{color:'#1e2d47'} }, y:{ ticks:{color:'#5d7299'}, grid:{color:'#1e2d47'}, min:60 } } }
+  });
+}
+
+function vd(label, val, unit) {
+  return `<div class="vital-detail-box">
+    <div class="vital-detail-lbl">${label}</div>
+    <div class="vital-detail-val">${val ?? '—'}<span class="vital-detail-unit">${val!=null?' '+unit:''}</span></div>
+  </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// VITALS FORM
+// ═══════════════════════════════════════════════════════
+
+function populateVitalPatientSelect() {
+  const sel = document.getElementById('v-pid');
+  sel.innerHTML = '<option value="">— Choose patient —</option>' +
+    STORE.patients.map(p=>`<option value="${p.id}">${p.name} (${p.ward}, ${p.room||'—'})</option>`).join('');
+}
+
+function submitVital() {
+  const pid = parseInt(document.getElementById('v-pid').value);
+  if (!pid) { toast('Select a patient first.','error'); return; }
+  const v = {
+    id: Date.now(),
+    patient_id: pid,
+    heart_rate:    parseNum('v-hr'),
+    oxygen_level:  parseNum('v-spo2'),
+    systolic_bp:   parseNum('v-sbp'),
+    diastolic_bp:  parseNum('v-dbp'),
+    temperature:   parseNum('v-temp'),
+    glucose_level: parseNum('v-glu'),
+    source: document.getElementById('v-src').value,
+    recorded_at: new Date().toISOString(),
+  };
+  if (!STORE.vitals[pid]) STORE.vitals[pid] = [];
+  STORE.vitals[pid].push(v);
+  const r = calcRisk(v);
+  const alerts = generateAlerts(pid, v);
+  updateBadge();
+  const rc = riskColor(r.level);
+  document.getElementById('vital-result').innerHTML = `
+    <div class="card">
+      <div class="card-hd">✅ Result</div>
+      <div>Risk Score: <strong style="font-family:'Space Mono',monospace">${r.score}/100</strong> —
+        <strong style="color:${rc}">${r.level}</strong>
+      </div>
+      ${alerts.length>0
+        ? `<div style="margin-top:.7rem"><strong>${alerts.length} alert(s) triggered:</strong>
+           <div class="alert-list" style="margin-top:.5rem">${alerts.map(a=>`<div class="a-item ${a.severity.toLowerCase()}"><div><div class="a-text">${a.alert_type}</div><div class="a-meta">${a.message}</div></div><span class="pill pill-${a.severity.toLowerCase()}">${a.severity}</span></div>`).join('')}</div></div>`
+        : `<div style="color:var(--green);margin-top:.5rem">All vitals within normal range ✅</div>`}
+    </div>`;
+  toast(`Vital recorded for patient #${pid}`, 'success');
+}
+function parseNum(id) { const v=parseFloat(document.getElementById(id).value); return isNaN(v)?null:v; }
+
+// ═══════════════════════════════════════════════════════
+// ALERTS
+// ═══════════════════════════════════════════════════════
+
+function loadAlerts() {
+  const unread = STORE.alerts.filter(a=>!a.is_read);
+  const el = document.getElementById('alerts-content');
+  if (unread.length===0) { el.innerHTML='<div class="card"><div class="empty"><div class="empty-ico">✅</div>No unread alerts — all clear!</div></div>'; return; }
+  el.innerHTML = `
+    <div style="margin-bottom:.8rem;color:var(--muted);font-size:.85rem">${unread.length} unread alert(s)</div>
+    <div class="alert-list">
+      ${unread.map(a=>`<div class="a-item ${a.severity.toLowerCase()}" id="ar-${a.id}">
+        <div>
+          <div class="a-text"><strong>${a.patient_name}</strong> (${a.ward}, ${a.room||'—'}) — ${a.alert_type}</div>
+          <div class="a-meta">${a.message} · ${fmtTime(a.created_at)}</div>
+        </div>
+        <div style="display:flex;gap:.5rem;align-items:center;flex-shrink:0">
+          <span class="pill pill-${a.severity.toLowerCase()}">${a.severity}</span>
+          <button class="btn btn-outline btn-sm" onclick="markRead(${a.id})">Mark Read</button>
+        </div>
+      </div>`).join('')}
+    </div>`;
+}
+
+function markRead(id) {
+  const a = STORE.alerts.find(x=>x.id===id); if(a) a.is_read=true;
+  document.getElementById(`ar-${id}`)?.remove();
+  updateBadge();
+  toast('Alert marked as read.','info');
+}
+
+function updateBadge() {
+  const cnt = STORE.alerts.filter(a=>!a.is_read).length;
+  document.getElementById('alert-badge').textContent = cnt;
+}
+
+function fmtTime(iso) { if(!iso) return ''; const d=new Date(iso); return d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); }
+
+// ═══════════════════════════════════════════════════════
+// DOCTORS
+// ═══════════════════════════════════════════════════════
+
+function loadDoctors() {
+  const grid = document.getElementById('doctors-grid');
+  const colors = ['135deg,#2d7ef7,#0fbccc','135deg,#9a6cf7,#2d7ef7','135deg,#0fd98a,#0fbccc','135deg,#f7385a,#ff8c38'];
+  grid.innerHTML = STORE.doctors.map((d,i)=>{
+    const pts = STORE.patients.filter(p=>p.doctor_id===d.id).length;
+    return `<div class="doc-card">
+      <div class="doc-avatar" style="background:linear-gradient(${colors[i%4]})">${d.avatar}</div>
+      <div class="doc-name">${d.name}</div>
+      <div class="doc-spec">${d.specialty}</div>
+      <div style="font-size:.8rem;color:var(--muted);margin-top:.3rem">${d.email}</div>
+      <div style="font-size:.8rem;color:var(--muted)">${d.phone}</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-top:.8rem">
+        <span style="font-size:.78rem;color:var(--muted)">Ward: ${d.ward}</span>
+        <span class="pill pill-blue">${pts} patient${pts!==1?'s':''}</span>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// ALGORITHMS (DAA)
+// ═══════════════════════════════════════════════════════
+
+const ALGORITHMS = [
+  { ico:'⚡', name:'Weighted Risk Scoring', complexity:'O(n)', type:'Greedy / Weighted Sum', desc:'Assigns numeric weights to each vital sign deviation from normal range. Heart rate, SpO2, blood pressure, temperature, and glucose are scored independently and summed to produce a 0–100 risk score used to prioritize patient care.' },
+  { ico:'📉', name:'Moving Average Smoothing', complexity:'O(n·w)', type:'Sliding Window', desc:'Computes a rolling average over the last w vital readings to reduce noise from sensor spikes. Applied to heart rate and blood pressure trends to produce cleaner chart visualizations and more reliable trend detection.' },
+  { ico:'🎯', name:'Binary Search — Patient Lookup', complexity:'O(log n)', type:'Divide & Conquer', desc:'Patients sorted by ID or name are searched using binary search for O(log n) retrieval. Critical in large hospital deployments where thousands of patient records must be queried instantly during emergencies.' },
+  { ico:'🔀', name:'Merge Sort — Patient Prioritization', complexity:'O(n log n)', type:'Divide & Conquer', desc:'Patients are sorted by risk score using merge sort before rendering the dashboard. Ensures doctors always see the most critical patients at the top of the list without redundant re-sorting.' },
+  { ico:'🔍', name:'Threshold Alert Detection', complexity:'O(k)', type:'Linear Scan / Rule Engine', desc:'Each incoming vital is compared against k configurable clinical thresholds using a linear rule engine. If any threshold is breached, an alert is generated immediately — the algorithm runs in O(k) time where k = number of rules.' },
+  { ico:'📐', name:'Trend Analysis — Linear Regression', complexity:'O(n)', type:'Statistical / Greedy', desc:'Fits a best-fit line to the last n vital readings to classify trends as Rising, Stable, or Falling. Enables early detection of deteriorating patients before their values cross critical thresholds.' },
+];
+
+function loadAlgorithms() {
+  document.getElementById('algo-grid').innerHTML = ALGORITHMS.map(a=>`
+    <div class="algo-card">
+      <div class="algo-ico">${a.ico}</div>
+      <div class="algo-name">${a.name}</div>
+      <div class="algo-cplx">${a.complexity}</div>
+      <div class="algo-type">${a.type}</div>
+      <div class="algo-desc">${a.desc}</div>
+    </div>`).join('');
+}
+
+// ═══════════════════════════════════════════════════════
+// DBMS SCHEMA
+// ═══════════════════════════════════════════════════════
+
+function loadDbms() {
+  const tables = [
+    { name:'doctors', cols:[
+      {n:'doctor_id',t:'INT AUTO_INCREMENT',pk:true},{n:'name',t:'VARCHAR(100)',pk:false},{n:'email',t:'VARCHAR(150)',pk:false},{n:'specialty',t:'VARCHAR(100)',pk:false},{n:'ward',t:'VARCHAR(50)',pk:false},{n:'phone',t:'VARCHAR(15)',pk:false},{n:'created_at',t:'TIMESTAMP',pk:false},
+    ]},
+    { name:'patients', cols:[
+      {n:'patient_id',t:'INT AUTO_INCREMENT',pk:true},{n:'doctor_id',t:'INT (FK → doctors)',pk:false},{n:'name',t:'VARCHAR(100)',pk:false},{n:'age',t:'INT',pk:false},{n:'gender',t:"ENUM('Male','Female','Other')",pk:false},{n:'blood_group',t:'VARCHAR(5)',pk:false},{n:'ward',t:'VARCHAR(50)',pk:false},{n:'room_no',t:'VARCHAR(10)',pk:false},{n:'condition',t:'VARCHAR(200)',pk:false},{n:'status',t:"ENUM('Stable','Critical','Discharged')",pk:false},{n:'contact_phone',t:'VARCHAR(15)',pk:false},
+    ]},
+    { name:'vitals', cols:[
+      {n:'vital_id',t:'INT AUTO_INCREMENT',pk:true},{n:'patient_id',t:'INT (FK → patients)',pk:false},{n:'heart_rate',t:'INT',pk:false},{n:'systolic_bp',t:'INT',pk:false},{n:'diastolic_bp',t:'INT',pk:false},{n:'oxygen_level',t:'DECIMAL(4,1)',pk:false},{n:'temperature',t:'DECIMAL(4,1)',pk:false},{n:'glucose_level',t:'DECIMAL(5,1)',pk:false},{n:'source',t:"ENUM('Manual','Wearable','EHR')",pk:false},{n:'recorded_at',t:'TIMESTAMP DEFAULT NOW()',pk:false},
+    ]},
+    { name:'alerts', cols:[
+      {n:'alert_id',t:'INT AUTO_INCREMENT',pk:true},{n:'patient_id',t:'INT (FK → patients)',pk:false},{n:'alert_type',t:'VARCHAR(100)',pk:false},{n:'message',t:'TEXT',pk:false},{n:'severity',t:"ENUM('Low','Medium','High','Critical')",pk:false},{n:'is_read',t:'BOOLEAN DEFAULT false',pk:false},{n:'created_at',t:'TIMESTAMP DEFAULT NOW()',pk:false},
+    ]},
+    { name:'medications', cols:[
+      {n:'med_id',t:'INT AUTO_INCREMENT',pk:true},{n:'patient_id',t:'INT (FK → patients)',pk:false},{n:'drug_name',t:'VARCHAR(100)',pk:false},{n:'dosage',t:'VARCHAR(50)',pk:false},{n:'frequency',t:'VARCHAR(50)',pk:false},{n:'prescribed_at',t:'TIMESTAMP DEFAULT NOW()',pk:false},
+    ]},
+  ];
+
+  const sqlQueries = [
+    { title:'Get all critical patients with latest vitals', sql:`SELECT p.name, p.ward, p.room_no, v.heart_rate, v.oxygen_level, v.systolic_bp
+FROM patients p
+JOIN vitals v ON v.vital_id = (
+  SELECT vital_id FROM vitals WHERE patient_id = p.patient_id ORDER BY recorded_at DESC LIMIT 1
+)
+WHERE p.status = 'Critical'
+ORDER BY v.heart_rate DESC;` },
+    { title:'Count patients per ward', sql:`SELECT ward, COUNT(*) AS total,
+  SUM(CASE WHEN status='Critical' THEN 1 ELSE 0 END) AS critical_count
+FROM patients
+GROUP BY ward
+ORDER BY critical_count DESC;` },
+    { title:'Get unread alerts with patient info', sql:`SELECT a.alert_type, a.severity, a.message, p.name, p.ward, p.room_no, a.created_at
+FROM alerts a
+JOIN patients p ON a.patient_id = p.patient_id
+WHERE a.is_read = false
+ORDER BY FIELD(a.severity,'Critical','High','Medium','Low'), a.created_at DESC;` },
+    { title:'Average vitals by ward (last 24 hours)', sql:`SELECT p.ward,
+  ROUND(AVG(v.heart_rate),1)    AS avg_hr,
+  ROUND(AVG(v.oxygen_level),1)  AS avg_spo2,
+  ROUND(AVG(v.systolic_bp),1)   AS avg_systolic,
+  ROUND(AVG(v.temperature),2)   AS avg_temp
+FROM vitals v
+JOIN patients p ON v.patient_id = p.patient_id
+WHERE v.recorded_at >= NOW() - INTERVAL 24 HOUR
+GROUP BY p.ward;` },
+  ];
+
+  document.getElementById('dbms-content').innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:1rem;margin-bottom:1.5rem">
+      ${tables.map(t=>`
+        <div class="card">
+          <div class="card-hd">🗃️ <span style="font-family:'Space Mono',monospace;color:var(--cyan)">${t.name}</span></div>
+          <table class="tbl" style="font-size:.78rem">
+            <thead><tr><th>Column</th><th>Type</th><th>Key</th></tr></thead>
+            <tbody>
+              ${t.cols.map(c=>`<tr>
+                <td style="font-family:'Space Mono',monospace;color:${c.pk?'var(--orange)':'var(--text)'}">${c.n}</td>
+                <td style="color:var(--muted);font-size:.72rem">${c.t}</td>
+                <td>${c.pk?'<span class="pill pill-blue" style="font-size:.65rem">PK</span>':c.n.endsWith('_id')&&!c.pk?'<span class="pill pill-purple" style="font-size:.65rem">FK</span>':''}</td>
+              </tr>`).join('')}
+            </tbody>
+          </table>
+        </div>`).join('')}
+    </div>
+    <div class="card">
+      <div class="card-hd">📝 Key SQL Queries</div>
+      <div style="display:flex;flex-direction:column;gap:1rem">
+        ${sqlQueries.map(q=>`
+          <div>
+            <div style="font-size:.78rem;font-weight:700;color:var(--muted2);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em">${q.title}</div>
+            <pre style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:.8rem 1rem;font-size:.78rem;font-family:'Space Mono',monospace;color:var(--cyan);overflow-x:auto;line-height:1.6;white-space:pre-wrap">${q.sql}</pre>
+          </div>`).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+// ADD PATIENT MODAL
+// ═══════════════════════════════════════════════════════
+
+function openAddPatient() {
+  document.getElementById('p-doc').innerHTML = '<option value="">— None —</option>' +
+    STORE.doctors.map(d=>`<option value="${d.id}">${d.name} (${d.specialty})</option>`).join('');
+  openModal('modal-add-patient');
+}
+
+function submitPatient() {
+  const name = document.getElementById('p-name').value.trim();
+  const age  = parseInt(document.getElementById('p-age').value);
+  const cond = document.getElementById('p-cond').value.trim();
+  if (!name||!age||!cond) { toast('Fill in required fields.','error'); return; }
+  const p = {
+    id: STORE.nextId.patient++,
+    name, age,
+    gender: document.getElementById('p-gender').value,
+    blood_group: document.getElementById('p-bg').value,
+    ward: document.getElementById('p-ward').value,
+    room: document.getElementById('p-room').value,
+    condition: cond,
+    doctor_id: parseInt(document.getElementById('p-doc').value)||null,
+    status: 'Stable',
+    phone: document.getElementById('p-phone').value,
+  };
+  STORE.patients.push(p);
+  STORE.vitals[p.id] = [];
+  toast(`Patient "${name}" added successfully!`,'success');
+  closeModal();
+  loadPatients();
+}
+
+// ═══════════════════════════════════════════════════════
+// UTILITIES
+// ═══════════════════════════════════════════════════════
+
+function openModal(id) {
+  document.getElementById(id).classList.add('open');
+  document.getElementById('overlay').classList.add('open');
+}
+function closeModal() {
+  document.querySelectorAll('.modal').forEach(m=>m.classList.remove('open'));
+  document.getElementById('overlay').classList.remove('open');
+}
+
+function toast(msg, type='info') {
+  const c = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = `toast ${type}`;
+  t.textContent = msg;
+  c.appendChild(t);
+  setTimeout(()=>t.remove(), 3500);
+}
+
+// Auto-refresh badge
+setInterval(updateBadge, 10000);
+</script>
 </body>
 </html>
+
