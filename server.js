@@ -1,6 +1,6 @@
 // server.js — Main Express Server
 // Healthcare Patient Monitoring System
-// SRM Institute — Batch 02
+
 
 const express = require('express');
 const cors    = require('cors');
